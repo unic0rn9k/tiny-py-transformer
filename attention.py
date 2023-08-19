@@ -26,11 +26,11 @@ class Attention(nn.Module):
         batch_size = q.shape[0]
         assert k.shape[0] == v.shape[0] == batch_size
 
-        # seqd = self.seqd
+        # seqd = self.seqd # (fixed, block size, or self.seqd as upper bound)
         seqd = q.shape[1]
         assert q.shape[1] == seqd
         assert k.shape[1] == seqd
-        assert v.shape[1] == seqd
+        assert v.shape[1] == seqd  # (this bound is not required, for cross-attention)
 
         assert q.shape[2] == self.embd
         assert k.shape[2] == self.embd
@@ -77,31 +77,45 @@ class MultiHeadAttention(nn.Module):
         return torch.cat([head(q, k, v) for head in self.heads], dim=-1)
 
 
+class DecoderBlock(nn.Module):
+    def __init__(
+        self,
+        seqd: int,
+        embd: int,
+        head_size: int,
+        nheads: int,
+        mask: bool = False,
+    ) -> None:
+        super().__init__()
+        self.attn = MultiHeadAttention(seqd, embd, head_size, nheads, mask)
+        self.proj = nn.Linear(head_size * nheads, embd)
+        self.ffwd = nn.Sequential(
+            nn.Linear(embd, embd * 4),
+            nn.ReLU(),
+            nn.Linear(embd * 4, embd),
+            nn.Dropout(0.1),
+        )
+
+    def forward(self, x: Tensor) -> Tensor:
+        x2 = self.attn(x, x, x)
+        x = self.proj(x2) + x
+        x = self.ffwd(x) + x
+        return x
+
+
 # Embd -> Attn -> Linear
 class Bruh(nn.Module):
     def __init__(self, seqd: int, embd: int, head_size: int) -> None:
         super().__init__()
-
-        self.seqd = seqd
-        self.embd = embd
-        self.head_size = head_size
-
         self.embed = nn.Embedding(len(chars), embd)
         self.pos_embed = nn.Embedding(seqd, embd)
-
-        self.attn = MultiHeadAttention(seqd, embd, head_size, 4, mask=True)
-
-        self.ffwd = nn.Sequential(
-            nn.Linear(head_size * 4, head_size * 8),
-            nn.ReLU(),
-            nn.Linear(head_size * 8, len(chars)),
-        )
+        self.decoder = DecoderBlock(seqd, embd, head_size, 8, mask=True)
+        self.out = nn.Linear(embd, len(chars))
 
     def forward(self, x: Tensor) -> Tensor:
         x = self.embed(x) + self.pos_embed(torch.arange(x.shape[1]))
-        x = self.attn(x, x, x)
-        x = self.ffwd(x)
-        return x
+        x = self.decoder(x)
+        return self.out(x)
 
 
 if __name__ == "__main__":
