@@ -92,9 +92,9 @@ class Bruh(nn.Module):
         self.attn = MultiHeadAttention(seqd, embd, head_size, 4, mask=True)
 
         self.ffwd = nn.Sequential(
-            nn.Linear(head_size * 4, head_size * 4),
+            nn.Linear(head_size * 4, head_size * 8),
             nn.ReLU(),
-            nn.Linear(head_size * 4, len(chars)),
+            nn.Linear(head_size * 8, len(chars)),
         )
 
     def forward(self, x: Tensor) -> Tensor:
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     for _ in range(500):
         x = bruh(tokens[:, -block_size:])
         x = x.view(-1, len(chars))
-        x = x.argmax(1)
+        x = torch.multinomial(F.softmax(x, dim=1), 1)
         tokens = torch.cat([tokens[0], torch.tensor([x[-1]])]).view(1, -1)
 
     for c in tokens[0]:
