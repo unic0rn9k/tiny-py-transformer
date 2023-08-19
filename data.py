@@ -3,7 +3,7 @@
 import torch
 from torch import Tensor
 
-block_size = 8
+block_size = 14
 batch_size = 4
 
 with open("tiny-shakespeare.txt", "r", encoding="utf-8") as f:

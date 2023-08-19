@@ -87,7 +87,10 @@ class Bruh(nn.Module):
         self.head_size = head_size
 
         self.embed = nn.Embedding(len(chars), embd)
+        self.pos_embed = nn.Embedding(seqd, embd)
+
         self.attn = MultiHeadAttention(seqd, embd, head_size, 4, mask=True)
+
         self.ffwd = nn.Sequential(
             nn.Linear(head_size * 4, head_size * 4),
             nn.ReLU(),
@@ -95,7 +98,7 @@ class Bruh(nn.Module):
         )
 
     def forward(self, x: Tensor) -> Tensor:
-        x = self.embed(x)
+        x = self.embed(x) + self.pos_embed(torch.arange(x.shape[1]))
         x = self.attn(x, x, x)
         x = self.ffwd(x)
         return x
@@ -139,7 +142,7 @@ if __name__ == "__main__":
     tokens = torch.tensor([[stoi["."], stoi[" "]]])
 
     for _ in range(500):
-        x = bruh(tokens)
+        x = bruh(tokens[:, -block_size:])
         x = x.view(-1, len(chars))
         x = x.argmax(1)
         tokens = torch.cat([tokens[0], torch.tensor([x[-1]])]).view(1, -1)
