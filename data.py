@@ -3,8 +3,8 @@
 import torch
 from torch import Tensor
 
-block_size = 14
-batch_size = 4
+block_size = 16
+batch_size = 16
 
 with open("tiny-shakespeare.txt", "r", encoding="utf-8") as f:
     text = f.read()
@@ -19,10 +19,16 @@ encode = lambda s: [
     stoi[c] for c in s
 ]  # encoder: take a string, output a list of integers
 data = torch.tensor(encode(text))
+train_data = data[: -len(data) // 10]
+val_data = data[-len(data) // 10 :]
 
 
 # data loading
-def get_batch():
+def get_batch(train=True):
+    if train:
+        data = train_data
+    else:
+        data = val_data
     # generate a small batch of data of inputs x and targets y
     ix = torch.randint(len(data) - block_size, (batch_size,))
     a = torch.stack([data[i : i + block_size] for i in ix])

@@ -51,7 +51,7 @@ class Attention(nn.Module):
             )
             assert not isnan(scores.sum())
 
-        ret = scores.softmax(1).matmul(v)
+        ret = F.dropout(scores.softmax(1), 0.2).matmul(v)
         assert ret.shape[0] == batch_size
         assert ret.shape[1] == seqd
         assert ret.shape[2] == self.head_size
@@ -98,7 +98,7 @@ class DecoderBlock(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         x2 = self.attn(x, x, x)
-        x = self.proj(x2) + x
+        x = F.dropout(self.proj(x2), 0.2) + x
         x = self.ffwd(x) + x
         return x
 
@@ -125,42 +125,52 @@ if __name__ == "__main__":
 
     train_iter = 5000
 
-    bruh = Bruh(block_size, 16, 32, 4)
+    bruh = Bruh(block_size, 64, 32, 2)
 
     optimizer = torch.optim.AdamW(bruh.parameters(), lr=0.001)
 
     for i in range(train_iter):
-        optimizer.zero_grad()
-        x, y = get_batch()
-        x = bruh(x)
+        try:
+            optimizer.zero_grad()
+            x, y = get_batch()
+            x = bruh(x)
 
-        x = x.view(-1, len(chars))
-        y = y.view(-1)
-        loss = F.cross_entropy(x, y)
-        loss.backward()
-        optimizer.step()
-        if i % 100:
-            losses = []
-            for _ in range(10):
-                x, y = get_batch()
-                x = bruh(x)
-                x = x.view(-1, len(chars))
-                y = y.view(-1)
-                loss = F.cross_entropy(x, y)
-                losses.append(loss.item())
-            print(
-                f"Loss: {torch.tensor(losses).mean().item():.2f} - {int(i*100/train_iter)}%",
-                end="\r",
-            )
+            x = x.view(-1, len(chars))
+            y = y.view(-1)
+            loss = F.cross_entropy(x, y)
+            loss.backward()
+            optimizer.step()
+            if i % 100:
 
-    print()
+                def get_loss(train):
+                    losses = []
+                    for _ in range(10):
+                        x, y = get_batch(train=train)
+                        x = bruh(x)
+                        x = x.view(-1, len(chars))
+                        y = y.view(-1)
+                        loss = F.cross_entropy(x, y)
+                        losses.append(loss.item())
+                    return losses
+
+                train_loss = torch.tensor(get_loss(True)).mean().item()
+                val_loss = torch.tensor(get_loss(False)).mean().item()
+                print(
+                    f"Loss: {train_loss:.2f} - Val loss: {val_loss:.2f} - {int(i*100/train_iter)}%",
+                    end="\r",
+                )
+
+        except KeyboardInterrupt:
+            break
+
+    print("\n--- Generating ---")
 
     tokens = torch.tensor([[stoi["."], stoi[" "]]])
 
     for _ in range(500):
         x = bruh(tokens[:, -block_size:])
         x = x.view(-1, len(chars))
-        x = torch.multinomial(F.softmax(x, dim=1), 1)
+        x = torch.multinomial(F.softmax(x * 1.6, dim=1), 1)
         tokens = torch.cat([tokens[0], torch.tensor([x[-1]])]).view(1, -1)
 
     for c in tokens[0]:
