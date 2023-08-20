@@ -105,11 +105,13 @@ class DecoderBlock(nn.Module):
 
 # Embd -> Attn -> Linear
 class Bruh(nn.Module):
-    def __init__(self, seqd: int, embd: int, head_size: int) -> None:
+    def __init__(self, seqd: int, embd: int, head_size: int, nlayers: int) -> None:
         super().__init__()
         self.embed = nn.Embedding(len(chars), embd)
         self.pos_embed = nn.Embedding(seqd, embd)
-        self.decoder = DecoderBlock(seqd, embd, head_size, 8, mask=True)
+        self.decoder = nn.Sequential(
+            *[DecoderBlock(seqd, embd, head_size, 8, mask=True) for _ in range(nlayers)]
+        )
         self.out = nn.Linear(embd, len(chars))
 
     def forward(self, x: Tensor) -> Tensor:
@@ -123,7 +125,7 @@ if __name__ == "__main__":
 
     train_iter = 5000
 
-    bruh = Bruh(block_size, 8, 16)
+    bruh = Bruh(block_size, 16, 32, 4)
 
     optimizer = torch.optim.AdamW(bruh.parameters(), lr=0.001)
 
