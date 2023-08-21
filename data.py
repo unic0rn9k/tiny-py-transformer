@@ -1,24 +1,15 @@
-# Stole this code from https://github.com/karpathy/ng-video-lecture/blob/master/gpt.py
-
 import torch
 from torch import Tensor
+from bpe import *
 
 block_size = 16
 batch_size = 16
 
-with open("tiny-shakespeare.txt", "r", encoding="utf-8") as f:
-    text = f.read()
-
 # here are all the unique characters that occur in this text
-chars = sorted(list(set(text)))
-vocab_size = len(chars)
+vocab_size = len(stoi)
 # create a mapping from characters to integers
-stoi = {ch: i for i, ch in enumerate(chars)}
-itos = {i: ch for i, ch in enumerate(chars)}
-encode = lambda s: [
-    stoi[c] for c in s
-]  # encoder: take a string, output a list of integers
-data = torch.tensor(encode(text))
+itos = [c for c in stoi]
+data = torch.tensor([token for token in tokenize(text_data) if type(token) == int])
 train_data = data[: -len(data) // 10]
 val_data = data[-len(data) // 10 :]
 

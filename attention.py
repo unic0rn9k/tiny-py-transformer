@@ -90,16 +90,19 @@ class DecoderBlock(nn.Module):
         self.attn = MultiHeadAttention(seqd, embd, head_size, nheads, mask)
         self.proj = nn.Linear(head_size * nheads, embd)
         self.ffwd = nn.Sequential(
-            nn.Linear(embd, embd * 4),
+            nn.Linear(embd, embd * 5),
             nn.ReLU(),
-            nn.Linear(embd * 4, embd),
+            nn.Linear(embd * 5, embd),
             nn.Dropout(0.1),
         )
+        self.ln1 = nn.LayerNorm(embd)
+        self.ln2 = nn.LayerNorm(embd)
 
     def forward(self, x: Tensor) -> Tensor:
-        x2 = self.attn(x, x, x)
+        nx = self.ln1(x)
+        x2 = self.attn(nx, nx, nx)
         x = F.dropout(self.proj(x2), 0.2) + x
-        x = self.ffwd(x) + x
+        x = self.ffwd(self.ln2(x)) + x
         return x
 
 
@@ -107,17 +110,18 @@ class DecoderBlock(nn.Module):
 class Bruh(nn.Module):
     def __init__(self, seqd: int, embd: int, head_size: int, nlayers: int) -> None:
         super().__init__()
-        self.embed = nn.Embedding(len(chars), embd)
+        self.embed = nn.Embedding(vocab_size, embd)
         self.pos_embed = nn.Embedding(seqd, embd)
         self.decoder = nn.Sequential(
-            *[DecoderBlock(seqd, embd, head_size, 8, mask=True) for _ in range(nlayers)]
+            *[DecoderBlock(seqd, embd, head_size, 9, mask=True) for _ in range(nlayers)]
         )
-        self.out = nn.Linear(embd, len(chars))
+        self.out = nn.Linear(embd, vocab_size)
+        self.ln = nn.LayerNorm(embd)
 
     def forward(self, x: Tensor) -> Tensor:
         x = self.embed(x) + self.pos_embed(torch.arange(x.shape[1]))
         x = self.decoder(x)
-        return self.out(x)
+        return self.out(self.ln(x))
 
 
 if __name__ == "__main__":
@@ -125,9 +129,15 @@ if __name__ == "__main__":
 
     train_iter = 5000
 
-    bruh = Bruh(block_size, 64, 32, 2)
+    bruh = Bruh(block_size, 64, 32, 4)
 
-    optimizer = torch.optim.AdamW(bruh.parameters(), lr=0.001)
+    optimizer = torch.optim.AdamW(bruh.parameters(), lr=1e-3)
+
+    try:
+        bruh.load_state_dict(torch.load("bruh.pt"))
+        print("Loaded model")
+    except FileNotFoundError:
+        print("No model found")
 
     for i in range(train_iter):
         try:
@@ -135,7 +145,7 @@ if __name__ == "__main__":
             x, y = get_batch()
             x = bruh(x)
 
-            x = x.view(-1, len(chars))
+            x = x.view(-1, vocab_size)
             y = y.view(-1)
             loss = F.cross_entropy(x, y)
             loss.backward()
@@ -147,7 +157,7 @@ if __name__ == "__main__":
                     for _ in range(10):
                         x, y = get_batch(train=train)
                         x = bruh(x)
-                        x = x.view(-1, len(chars))
+                        x = x.view(-1, vocab_size)
                         y = y.view(-1)
                         loss = F.cross_entropy(x, y)
                         losses.append(loss.item())
@@ -163,14 +173,16 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             break
 
+    torch.save(bruh.state_dict(), "bruh.pt")
+
     print("\n--- Generating ---")
 
-    tokens = torch.tensor([[stoi["."], stoi[" "]]])
+    tokens = torch.tensor([[stoi["."]]])
 
     for _ in range(500):
         x = bruh(tokens[:, -block_size:])
-        x = x.view(-1, len(chars))
-        x = torch.multinomial(F.softmax(x * 1.6, dim=1), 1)
+        x = x.view(-1, vocab_size)
+        x = torch.multinomial(F.softmax(x * 1.5, dim=1), 1)
         tokens = torch.cat([tokens[0], torch.tensor([x[-1]])]).view(1, -1)
 
     for c in tokens[0]:

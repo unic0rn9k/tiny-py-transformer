@@ -6,22 +6,28 @@ Small transformer implementation using pytorch, without using `torch.nn.Transfor
 The example bellow is produced by a model with, 2 decoder layers, block and batch size of 16, embedding size of 64 and a head size of 32.
 
 ```text
-Loss: 0.45 - Val loss: 0.46 - 99%
+ss: 0.62 - Val loss: 0.74 - 0%
 --- Generating ---
-. o od o o a o ied
-HIN:
-Iut heser yourt ropig youd willimor fourertheisiederayou boust blin ondill aug appearde bladouperiefeands wan bne.
+.
 
-ou ll hirsiem yougdien whirsougebly,
-And bende wientere hit and abat win wieg indue hand are po wiice
-Lieiceing nereyd wice our; our?
+LowU roddsue de wer shers star.
 
-IIU:
-Id, hitiedit wae ming towiot fries thind eond wine pourdis meer ho'ding binge hor out ince quicuernt thouysiou dour. lourn.
+RIOUCI he tal on lace sos ther his histads,
+I stro of brhanings taker I the hod ho is son sometalsirs that, your, whet you sir the Welf mu gooF with wiss thi stal, that he sir the it ther he spesstad shou, their stace of your stasstad.
 
-IUS:
-This and haie 'ed
-ARI thoroous oering ou miou oug ald oukeremeris wils ale re yousucieint th
+TETER:
+MBut you  Willtise sir,
+Ther sendsst.
+A of the, wher, sir ther, boire the shalth hand mor stain the sir strue.
+We stal you stant place disidl staintatiod Fge,
+Of sirse not this this I the to the the more shoue thi sons soul
+I sirs strustal unat thesir she he sher you foe, tace,
+I wills hiforl this tay stal,
+O, sir make -more the king sir wifuls
+With
+MERY:
+ORILI he staf stal it son sir you have selve have swer the stae she fair ther, 
+Lordt 
 ```
 
 ## Thanks a lot to...
