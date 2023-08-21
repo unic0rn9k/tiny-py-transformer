@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
     bruh = Bruh(block_size, 64, 32, 4)
 
-    optimizer = torch.optim.AdamW(bruh.parameters(), lr=1e-3)
+    optimizer = torch.optim.AdamW(bruh.parameters(), lr=1e-6)
 
     try:
         bruh.load_state_dict(torch.load("bruh.pt"))
@@ -182,9 +182,10 @@ if __name__ == "__main__":
     for _ in range(500):
         x = bruh(tokens[:, -block_size:])
         x = x.view(-1, vocab_size)
-        x = torch.multinomial(F.softmax(x * 1.5, dim=1), 1)
+        x = torch.multinomial(F.softmax(x * 1.2, dim=1), 1)
         tokens = torch.cat([tokens[0], torch.tensor([x[-1]])]).view(1, -1)
 
     for c in tokens[0]:
+        # print("|" + itos[int(c.item())], end="")
         print(itos[int(c.item())], end="")
     print()
