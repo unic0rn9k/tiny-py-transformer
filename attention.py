@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     bruh = Bruh(block_size, 64, 32, 6).to(device)
 
-    optimizer = torch.optim.AdamW(bruh.parameters(), lr=1e-4)
+    optimizer = torch.optim.AdamW(bruh.parameters(), lr=1e-5)
 
     try:
         bruh.load_state_dict(torch.load("bruh.pt", map_location=torch.device(device)))

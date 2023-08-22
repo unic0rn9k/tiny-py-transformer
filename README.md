@@ -6,25 +6,35 @@ Small transformer, weekend project, implementation using pytorch, without using 
 The example bellow is produced by a model with, 2 decoder layers, block and batch size of 16, embedding size of 64 and a head size of 32.
 
 ```text
-Loss: 0.32 - Val loss: 0.39 - 20%
+Loss: 0.24 - Val loss: 0.26 - 27%
 --- Generating ---
 .
-CHHHHHHHHHHHHHHAs and spict,
-You shouse so agains besto his but I eyur, I should some le which so for the bearss all spos made sens,
-That of grace Med exulsters the dis an with the ke with cannot mattles, will le woman dange fill somesly;
-My sith noble,
-Ser hearts some some, the troly sto but stady paunse. my Bcr
-The: the untong strens of my man shourse the sucng rones.
 
-Yjes breasters will the deruse yourse go man by the lord's ca;
-What some the refaols your in brothe king disumd the brother he, Rome the founse some so, the come to boson of betters you spil the knay brothe secon?
+CCCCCCCCCCCCCUUKE:
+I I Richard:
+I more, my will's ance my a be that the gentle my ENIUS:
+BERUK:
+Hhere:
+But hat in or of in thees.
 
-ESTON:
-But a bosome.
-Son't dishos you the word
-The ke in to constake of scogent:
-Thys comest the uns and so to the hanstrenss mother he ried crown;
-This I cannot with me so 
+Lord Isir of have streem to shall see a abue,
+But tost have and days to straim'd and there cheer sincion.
+
+LUCLUS:
+A las may to how of of thived of theres putt harm him my shal Marcius and death,
+Plast is I hear bas your I kind with have to death:
+For to to most in her head to my the the to is pasty all apriin, we ne your will for have naon
+I NINIUS:
+Hath we loved I wobow.
+
+PUCHUDUKE:
+The say is his king.
+
+BUCUS:
+Nay you, am morew, this brother since.
+
+And to thine this lifes heress that sinceoiees ans;
+To with to my lord Ry no am hiss here the dearst the stired the do her Marcience
 ```
 
 **Example of text, with individual tokens separated by `|`:**
