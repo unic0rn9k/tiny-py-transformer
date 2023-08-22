@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from math import sqrt, isnan
+from math import sqrt, isnan, sin, cos
 from torch import Tensor
 import torch.nn.functional as F
 from data import *
@@ -47,7 +47,7 @@ class Attention(nn.Module):
 
         if self.mask:
             scores = scores.masked_fill(
-                torch.tril(torch.ones(seqd, seqd)) == 0, float("-inf")
+                torch.tril(torch.ones(seqd, seqd)).to(device) == 0, float("-inf")
             )
             assert not isnan(scores.sum())
 
@@ -106,20 +106,29 @@ class DecoderBlock(nn.Module):
         return x
 
 
+def positional_encoding(seqd: int, embd: int) -> Tensor:
+    pe = torch.zeros(seqd, embd)
+    for pos in range(seqd):
+        for i in range(0, embd, 2):
+            pe[pos, i] = sin(pos / (10000 ** ((2 * i) / embd)))
+            pe[pos, i + 1] = cos(pos / (10000 ** ((2 * (i + 1)) / embd)))
+    return pe
+
+
 # Embd -> Attn -> Linear
 class Bruh(nn.Module):
     def __init__(self, seqd: int, embd: int, head_size: int, nlayers: int) -> None:
         super().__init__()
         self.embed = nn.Embedding(vocab_size, embd)
-        self.pos_embed = nn.Embedding(seqd, embd)
+        self.pos_embd = positional_encoding(seqd, embd).to(device)
         self.decoder = nn.Sequential(
-            *[DecoderBlock(seqd, embd, head_size, 9, mask=True) for _ in range(nlayers)]
+            *[DecoderBlock(seqd, embd, head_size, 6, mask=True) for _ in range(nlayers)]
         )
         self.out = nn.Linear(embd, vocab_size)
         self.ln = nn.LayerNorm(embd)
 
     def forward(self, x: Tensor) -> Tensor:
-        x = self.embed(x) + self.pos_embed(torch.arange(x.shape[1]))
+        x = self.embed(x) + self.pos_embd[: x.shape[1], :]
         x = self.decoder(x)
         return self.out(self.ln(x))
 
@@ -129,12 +138,12 @@ if __name__ == "__main__":
 
     train_iter = 5000
 
-    bruh = Bruh(block_size, 64, 32, 4)
+    bruh = Bruh(block_size, 64, 32, 6).to(device)
 
-    optimizer = torch.optim.AdamW(bruh.parameters(), lr=1e-6)
+    optimizer = torch.optim.AdamW(bruh.parameters(), lr=1e-5)
 
     try:
-        bruh.load_state_dict(torch.load("bruh.pt"))
+        bruh.load_state_dict(torch.load("bruh.pt", map_location=torch.device(device)))
         print("Loaded model")
     except FileNotFoundError:
         print("No model found")
@@ -177,13 +186,13 @@ if __name__ == "__main__":
 
     print("\n--- Generating ---")
 
-    tokens = torch.tensor([[stoi["."]]])
+    tokens = torch.tensor([[stoi["."]]]).to(device)
 
     for _ in range(500):
         x = bruh(tokens[:, -block_size:])
         x = x.view(-1, vocab_size)
-        x = torch.multinomial(F.softmax(x * 1.2, dim=1), 1)
-        tokens = torch.cat([tokens[0], torch.tensor([x[-1]])]).view(1, -1)
+        x = torch.multinomial(F.softmax(x * 1.4, dim=1), 1)
+        tokens = torch.cat([tokens[0], torch.tensor([x[-1]]).to(device)]).view(1, -1)
 
     for c in tokens[0]:
         # print("|" + itos[int(c.item())], end="")

@@ -2,14 +2,19 @@ import torch
 from torch import Tensor
 from bpe import *
 
-block_size = 16
-batch_size = 16
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Running on {device}")
+
+block_size = 20
+batch_size = 20
 
 # here are all the unique characters that occur in this text
 vocab_size = len(stoi)
 # create a mapping from characters to integers
 itos = [c for c in stoi]
-data = torch.tensor([token for token in tokenize(text_data) if type(token) == int])
+data = torch.tensor([token for token in tokenize(text_data) if type(token) == int]).to(
+    device
+)
 train_data = data[: -len(data) // 10]
 val_data = data[-len(data) // 10 :]
 
