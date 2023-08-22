@@ -51,7 +51,7 @@ class Attention(nn.Module):
             )
             assert not isnan(scores.sum())
 
-        ret = F.dropout(scores.softmax(1), 0.2).matmul(v)
+        ret = scores.softmax(1).matmul(v)
         assert ret.shape[0] == batch_size
         assert ret.shape[1] == seqd
         assert ret.shape[2] == self.head_size
@@ -93,7 +93,6 @@ class DecoderBlock(nn.Module):
             nn.Linear(embd, embd * 5),
             nn.ReLU(),
             nn.Linear(embd * 5, embd),
-            nn.Dropout(0.1),
         )
         self.ln1 = nn.LayerNorm(embd)
         self.ln2 = nn.LayerNorm(embd)
@@ -101,7 +100,7 @@ class DecoderBlock(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         nx = self.ln1(x)
         x2 = self.attn(nx, nx, nx)
-        x = F.dropout(self.proj(x2), 0.2) + x
+        x = self.proj(x2) + x
         x = self.ffwd(self.ln2(x)) + x
         return x
 
@@ -140,7 +139,7 @@ if __name__ == "__main__":
 
     bruh = Bruh(block_size, 64, 32, 6).to(device)
 
-    optimizer = torch.optim.AdamW(bruh.parameters(), lr=1e-5)
+    optimizer = torch.optim.AdamW(bruh.parameters(), lr=1e-4)
 
     try:
         bruh.load_state_dict(torch.load("bruh.pt", map_location=torch.device(device)))

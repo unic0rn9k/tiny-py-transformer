@@ -6,32 +6,25 @@ Small transformer, weekend project, implementation using pytorch, without using 
 The example bellow is produced by a model with, 2 decoder layers, block and batch size of 16, embedding size of 64 and a head size of 32.
 
 ```text
-Loss: 0.45 - Val loss: 0.49 - 12%
+Loss: 0.32 - Val loss: 0.39 - 20%
 --- Generating ---
 .
+CHHHHHHHHHHHHHHAs and spict,
+You shouse so agains besto his but I eyur, I should some le which so for the bearss all spos made sens,
+That of grace Med exulsters the dis an with the ke with cannot mattles, will le woman dange fill somesly;
+My sith noble,
+Ser hearts some some, the troly sto but stady paunse. my Bcr
+The: the untong strens of my man shourse the sucng rones.
 
-Q wel
-UF fl
-upef, I the lace chae glop in copa me is it dier be mas of soand to sirss.
+Yjes breasters will the deruse yourse go man by the lord's ca;
+What some the refaols your in brothe king disumd the brother he, Rome the founse some so, the come to boson of betters you spil the knay brothe secon?
 
-BRIO:
-With I dibe be trires ster, not reliy leet knownd of bornci come bad ball stribeass I with I be haves know sate me you be his ss I would hern thou what For fulssion.
-
-INGHETWell to sI so strib,
-Wale in wifets in lee to strayy
-Le lae
-se you in sivr lord me, would the down the were smore no spect:
-I I sto the nores fellenty,
-What Ais come of with and Fes
-Shalard,
-Of my chat hud,
-But she haves thene sa far oner she will,
-I say say forthe foll heaof your more unyou you the that you my come, to desir at of his ssed you E down to settysion.
-
-SLARETER:
-A you ther speak an s,
-
-Qy the the sit for of to in it the dod send you a ams the biay the
+ESTON:
+But a bosome.
+Son't dishos you the word
+The ke in to constake of scogent:
+Thys comest the uns and so to the hanstrenss mother he ried crown;
+This I cannot with me so 
 ```
 
 **Example of text, with individual tokens separated by `|`:**

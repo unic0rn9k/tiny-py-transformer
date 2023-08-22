@@ -1,6 +1,5 @@
 from typing import Dict
-
-print("--- BPE ---")
+import pickle
 
 with open("tiny-shakespeare.txt", "r", encoding="utf-8") as f:
     text_data = f.read()
@@ -57,30 +56,41 @@ def tokenize(text: str) -> list[int | list[str]]:
     return [int(token) for sublist in tokens for token in sublist]
 
 
-freq = {}
-for l in range(2, 4):
-    for i in range(len(text_data) - l):
-        pair = text_data[i : i + l].lower()
-        if not pair:
-            continue
-        if any(c in singlets for c in pair):
-            continue
-        if pair not in freq:
-            freq[pair] = 1
-        else:
-            freq[pair] += 1
+if __name__ == "__main__":
+    print("--- BPE ---")
 
-    for pair in sorted(freq.items(), key=lambda item: item[1], reverse=True)[:300]:
-        if pair[0] in stoi:
-            continue
-        stoi[pair[0]] = pair_count
-        pair_count += 1
+    freq = {}
+    for l in range(2, 4):
+        for i in range(len(text_data) - l):
+            pair = text_data[i : i + l].lower()
+            if not pair:
+                continue
+            if any(c in singlets for c in pair):
+                continue
+            if pair not in freq:
+                freq[pair] = 1
+            else:
+                freq[pair] += 1
 
-for i in range(len(text_data) - 6):
-    tokens = tokenize(text_data[i : i + 10])
-    if tokens[0] == -1:
-        for token in tokens[1]:
-            stoi[token] = pair_count
+        for pair in sorted(freq.items(), key=lambda item: item[1], reverse=True)[:300]:
+            if pair[0] in stoi:
+                continue
+            stoi[pair[0]] = pair_count
             pair_count += 1
 
-print("Vocab size:", len(stoi))
+    for i in range(len(text_data) - 6):
+        tokens = tokenize(text_data[i : i + 10])
+        if tokens[0] == -1:
+            for token in tokens[1]:
+                stoi[token] = pair_count
+                pair_count += 1
+
+    print("Vocab size:", len(stoi))
+
+    # Pickle the dictionary
+    with open("vocabulary.pickle", "wb") as f:
+        pickle.dump(stoi, f)
+
+else:
+    with open("vocabulary.pickle", "rb") as f:
+        stoi = pickle.load(f)
