@@ -63,6 +63,3 @@ ss: 0.45 - Val loss: 0.50 - 0%
 |T|om| |a| |him| |if| |all| |be| |s|we|d| |thi|nk| |s|tr|ck|,|
 |I|f| |s|wer
 ```
-
-## Thanks a lot to...
-[Andrej Karpathy](https://github.com/karpathy), for making a detailed guide on how to implement a transformer decoder network, like mine. Mine does have some key differences to Karpathy's, notably a different tokenization scheme.
